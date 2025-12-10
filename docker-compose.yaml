@@ -19,7 +19,8 @@ services:
       - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true # Often needed for hot reload in Docker
-      - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS=envy
+    env_file:
+      - .env
 
   # Placeholder for backend service
   # Replace image/command with build context when backend is ready

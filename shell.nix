@@ -11,7 +11,5 @@ pkgs.mkShell {
     echo "nodejs, vim and zellij are now available";
  '';
 
- __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS = "envy";
-
 }
 
