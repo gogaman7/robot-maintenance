@@ -24,8 +24,7 @@ services:
   # Placeholder for backend service
   # Replace image/command with build context when backend is ready
   backend:
-    image: traefik/whoami
-    command: --port 3000
-    expose:
-      - "3000"
-
+    build:
+      context: ./backend
+    ports:
+      - "3000:3000"
