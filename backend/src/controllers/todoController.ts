@@ -56,11 +56,6 @@ export const updateTodo = (req: Request, res: Response) => {
   if (createdDate !== undefined && createdDate !== todo.createdDate) {
     return res.status(StatusCodes.CONFLICT).json({ error: 'Stale object: createdDate does not match' });
   }
-
-  // Check if categoryId is being changed and does not match
-  if (categoryId !== undefined && Number(categoryId) !== todo.categoryId) {
-    return res.status(StatusCodes.CONFLICT).json({ error: 'Stale object: categoryId does not match' });
-  }
   
   // Validate that categoryId exists if it's being provided
   if (categoryId !== undefined) {
@@ -74,6 +69,7 @@ export const updateTodo = (req: Request, res: Response) => {
   if (description !== undefined) todo.description = description.trim();
   if (dueDate !== undefined) todo.dueDate = dueDate;
   if (completed !== undefined) todo.completed = completed;
+  if (categoryId !== undefined) todo.categoryId = Number(categoryId);
   
   res.json(todo);
 };

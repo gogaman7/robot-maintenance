@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import type { Todo } from './TodoAppCard';
+import type { Todo, Category } from './TodoAppCard';
 
 interface TodosListProps {
   todos: Todo[];
+  categories: Category[];
   onDeleteTodo: (id: number) => void;
   onToggleComplete: (id: number) => void;
   onUpdateTodo: (todo: Todo) => void;
 }
 
 export default function TodosList({ 
-  todos, 
+  todos,
+  categories,
   onDeleteTodo, 
   onToggleComplete,
   onUpdateTodo 
@@ -18,6 +20,7 @@ export default function TodosList({
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editDueDate, setEditDueDate] = useState('');
+  const [editCategoryId, setEditCategoryId] = useState<number>(2);
 
   const formatDate = (dateString: string) => {
     // Need to handle partial dates (YYYY-MM-DD) to prevent timezone shifts when converting to Date
@@ -38,6 +41,7 @@ export default function TodosList({
     setEditTitle(todo.title);
     setEditDescription(todo.description);
     setEditDueDate(todo.dueDate);
+    setEditCategoryId(todo.categoryId);
   };
 
   const saveEdit = () => {
@@ -50,7 +54,8 @@ export default function TodosList({
         ...editingTodo,
         title: editTitle.trim(),
         description: editDescription.trim(),
-        dueDate: editDueDate
+        dueDate: editDueDate,
+        categoryId: editCategoryId
     };
 
     onUpdateTodo(updatedTodo);
@@ -127,6 +132,20 @@ export default function TodosList({
                     value={editDescription}
                     onChange={(e) => setEditDescription(e.target.value)}
                 ></textarea>
+            </div>
+            <div className="form-group">
+                <label>Category</label>
+                <select
+                    id="editTodoCategory"
+                    value={editCategoryId}
+                    onChange={(e) => setEditCategoryId(Number(e.target.value))}
+                >
+                    {categories.filter(c => c.id !== 1).map(category => (
+                        <option key={category.id} value={category.id}>
+                            {category.name}
+                        </option>
+                    ))}
+                </select>
             </div>
             <div className="form-group">
                 <label>Due Date</label>

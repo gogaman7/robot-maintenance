@@ -141,6 +141,7 @@ export default function TodosSection({
       />
       <TodosList 
         todos={sortedTodos}
+        categories={categories}
         onDeleteTodo={handleDeleteTodo}
         onToggleComplete={handleToggleComplete}
         onUpdateTodo={handleUpdateTodo}
