@@ -4,6 +4,7 @@ import TodosTop from './TodosTop';
 import TodoEdit from './TodoEdit';
 import TodosList from './TodosList';
 import { api, type ApiError } from '../services/api';
+import { COMPLETION_STATUS, type CompletionStatusType } from '../constants/completionStatus';
 
 interface TodosSectionProps {
   todos: Todo[];
@@ -19,6 +20,7 @@ export default function TodosSection({
   currentCategoryId
 }: TodosSectionProps) {
   const [sortType, setSortType] = useState<string>('created-desc');
+  const [completionStatus, setCompletionStatus] = useState<CompletionStatusType>(COMPLETION_STATUS.ALL);
   const [error, setError] = useState<string | null>(null);
 
   const currentCategoryName = categories.find(c => c.id === currentCategoryId)?.name || 'All';
@@ -28,7 +30,13 @@ export default function TodosSection({
     ? todos
     : todos.filter(t => t.categoryId === currentCategoryId);
 
-  const sortedTodos = [...filteredTodos].sort((a, b) => {
+  const completionFilteredTodos = filteredTodos.filter(t => {
+    if (completionStatus === COMPLETION_STATUS.ACTIVE) return !t.completed;
+    if (completionStatus === COMPLETION_STATUS.COMPLETED) return t.completed;
+    return true; // COMPLETION_STATUS.ALL
+  });
+
+  const sortedTodos = [...completionFilteredTodos].sort((a, b) => {
     switch (sortType) {
         case 'created-desc':
             return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
@@ -132,6 +140,8 @@ export default function TodosSection({
       )}
       <TodosTop 
         title={displayTitle} 
+        completionStatus={completionStatus}
+        setCompletionStatus={setCompletionStatus}
         sortType={sortType} 
         setSortType={setSortType} 
       />
