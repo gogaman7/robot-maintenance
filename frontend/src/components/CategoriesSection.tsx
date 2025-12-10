@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Category, Todo } from './TodoAppCard';
+import { api, type ApiError } from '../services/api';
 
 interface CategoriesSectionProps {
   categories: Category[];
@@ -21,31 +22,58 @@ export default function CategoriesSection({
   const [newCategoryName, setNewCategoryName] = useState('');
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editCategoryName, setEditCategoryName] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const addCategory = () => {
+  const addCategory = async () => {
     if (!newCategoryName.trim()) return;
-    const newCategory: Category = {
-      id: Date.now(),
-      name: newCategoryName.trim()
-    };
-    setCategories([...categories, newCategory]);
-    setNewCategoryName('');
+    
+    try {
+      setError(null);
+      const newCategory = await api.createCategory(newCategoryName.trim());
+      setCategories([...categories, newCategory]);
+      setNewCategoryName('');
+    } catch (err) {
+      const apiError = err as ApiError;
+      setError(apiError.error || 'Failed to create category');
+      alert(`Error: ${apiError.error || 'Failed to create category'}`);
+    }
   };
 
-  const deleteCategory = (id: number) => {
+  const deleteCategory = async (id: number) => {
     if (id === 1) return; // Cannot delete 'All'
     if (!confirm('Are you sure you want to delete this category? All todos in this category will remain but be uncategorized.')) return;
 
-    // Update todos in this category to 'All' (id 1)
-    const updatedTodos = todos.map(todo => 
-      todo.categoryId === id ? { ...todo, categoryId: 1 } : todo
-    );
-    setTodos(updatedTodos);
+    try {
+      setError(null);
+      
+      // Update todos in this category to 'All' (id 1) before deleting
+      const todosToUpdate = todos.filter(todo => todo.categoryId === id);
+      await Promise.all(
+        todosToUpdate.map(todo => 
+          api.updateTodo(todo.id, { 
+            ...todo,
+            categoryId: 1 
+          })
+        )
+      );
 
-    setCategories(categories.filter(c => c.id !== id));
+      // Update local state
+      const updatedTodos = todos.map(todo => 
+        todo.categoryId === id ? { ...todo, categoryId: 1 } : todo
+      );
+      setTodos(updatedTodos);
 
-    if (currentCategoryId === id) {
-      setCurrentCategoryId(1);
+      // Delete the category
+      await api.deleteCategory(id);
+      setCategories(categories.filter(c => c.id !== id));
+
+      if (currentCategoryId === id) {
+        setCurrentCategoryId(1);
+      }
+    } catch (err) {
+      const apiError = err as ApiError;
+      setError(apiError.error || 'Failed to delete category');
+      alert(`Error: ${apiError.error || 'Failed to delete category'}`);
     }
   };
 
@@ -54,18 +82,38 @@ export default function CategoriesSection({
     setEditCategoryName(category.name);
   };
 
-  const saveEditCategory = () => {
+  const saveEditCategory = async () => {
     if (!editingCategory || !editCategoryName.trim()) return;
     
-    setCategories(categories.map(c => 
-      c.id === editingCategory.id ? { ...c, name: editCategoryName.trim() } : c
-    ));
-    setEditingCategory(null);
+    try {
+      setError(null);
+      const updatedCategory = await api.updateCategory(editingCategory.id, editCategoryName.trim());
+      setCategories(categories.map(c => 
+        c.id === updatedCategory.id ? updatedCategory : c
+      ));
+      setEditingCategory(null);
+    } catch (err) {
+      const apiError = err as ApiError;
+      setError(apiError.error || 'Failed to update category');
+      alert(`Error: ${apiError.error || 'Failed to update category'}`);
+    }
   };
 
   return (
     <aside className="sidebar">
       <h2>Categories</h2>
+      {error && (
+        <div style={{ 
+          padding: '0.5rem', 
+          marginBottom: '1rem', 
+          background: '#ffe5e5', 
+          color: '#dc3545',
+          borderRadius: '4px',
+          fontSize: '0.875rem'
+        }}>
+          {error}
+        </div>
+      )}
       <ul className="category-list" id="categoryList">
         {categories.map(cat => (
           <li 
@@ -128,3 +176,4 @@ export default function CategoriesSection({
   );
 }
 
+test

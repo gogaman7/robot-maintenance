@@ -9,6 +9,15 @@ export const getTodos = (req: Request, res: Response) => {
 export const createTodo = (req: Request, res: Response) => {
   const { title, description, dueDate, categoryId } = req.body;
   
+  // Validate required fields
+  if (!title || typeof title !== 'string' || !title.trim()) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Title is required' });
+  }
+  
+  if (categoryId === undefined || categoryId === null) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Category ID is required' });
+  }
+  
   // Validate that categoryId exists
   const categoryExists = categories.some(c => c.id === Number(categoryId));
   if (!categoryExists) {
@@ -18,8 +27,8 @@ export const createTodo = (req: Request, res: Response) => {
   const createdDate = new Date().toISOString();
   const todo = {
     id: getNextTodoId(),
-    title,
-    description,
+    title: title.trim(),
+    description: description ? description.trim() : '',
     dueDate: dueDate || null,
     createdDate,
     categoryId: Number(categoryId),
@@ -36,6 +45,11 @@ export const updateTodo = (req: Request, res: Response) => {
   
   if (!todo) {
     return res.status(StatusCodes.NOT_FOUND).json({ error: 'Todo not found' });
+  }
+
+  // Validate title if provided
+  if (title !== undefined && (!title || typeof title !== 'string' || !title.trim())) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Title cannot be empty' });
   }
 
   // Check if createdDate is being changed or does not match
@@ -56,8 +70,8 @@ export const updateTodo = (req: Request, res: Response) => {
     }
   }
   
-  if (title !== undefined) todo.title = title;
-  if (description !== undefined) todo.description = description;
+  if (title !== undefined) todo.title = title.trim();
+  if (description !== undefined) todo.description = description.trim();
   if (dueDate !== undefined) todo.dueDate = dueDate;
   if (completed !== undefined) todo.completed = completed;
   

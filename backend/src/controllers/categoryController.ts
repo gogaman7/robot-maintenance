@@ -8,9 +8,14 @@ export const getCategories = (req: Request, res: Response) => {
 
 export const createCategory = (req: Request, res: Response) => {
   const { name } = req.body;
+  
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Category name is required' });
+  }
+  
   const category = {
     id: getNextCategoryId(),
-    name
+    name: name.trim()
   };
   categories.push(category);
   res.json(category);
@@ -19,13 +24,18 @@ export const createCategory = (req: Request, res: Response) => {
 export const updateCategory = (req: Request, res: Response) => {
   const { id } = req.params;
   const { name } = req.body;
+  
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Category name is required' });
+  }
+  
   const category = categories.find(c => c.id === Number(id));
   
   if (!category) {
     return res.status(StatusCodes.NOT_FOUND).json({ error: 'Category not found' });
   }
   
-  category.name = name;
+  category.name = name.trim();
   res.json(category);
 };
 

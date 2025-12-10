@@ -128,7 +128,65 @@ The application starts with pre-populated data:
 The API uses semantic HTTP status codes via the `http-status-codes` library:
 - `200 OK` - Successful GET, POST, or PUT
 - `204 No Content` - Successful DELETE
-- `400 Bad Request` - Invalid data (e.g., non-existent categoryId)
+- `400 Bad Request` - Invalid data (e.g., non-existent categoryId, missing required fields)
 - `404 Not Found` - Resource not found
 - `409 Conflict` - Stale object (concurrent modification detected)
+
+Error responses include a JSON body with descriptive error messages:
+```json
+{
+  "error": "Category name is required"
+}
+```
+
+## Testing
+
+### Automated Test Script
+
+A test script is provided to verify all API endpoints and error handling:
+
+```bash
+# Make sure the application is running first
+docker-compose up -d
+
+# Run the test script (requires jq for JSON formatting)
+./backend/test-api.sh
+```
+
+The script tests:
+- Health endpoint
+- GET requests for categories and todos
+- POST requests with valid and invalid data
+- Error responses with appropriate HTTP status codes
+
+### Manual Testing
+
+You can also test endpoints manually using `curl`:
+
+```bash
+# Get all categories
+curl http://localhost/api/category
+
+# Get all todos
+curl http://localhost/api/todo
+
+# Create a new todo
+curl -X POST http://localhost/api/todo \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Test Todo","description":"Test description","categoryId":2}'
+
+# Update a todo
+curl -X PUT http://localhost/api/todo/1 \
+  -H "Content-Type: application/json" \
+  -d '{"completed":true}'
+
+# Delete a todo
+curl -X DELETE http://localhost/api/todo/1
+
+# Test error handling (missing required field)
+curl -X POST http://localhost/api/todo \
+  -H "Content-Type: application/json" \
+  -d '{"categoryId":2}'
+# Returns: {"error":"Title is required"} with HTTP 400
+```
 
