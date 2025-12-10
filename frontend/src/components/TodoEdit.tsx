@@ -1,15 +1,26 @@
-import { useState } from 'react';
-import type { Todo } from './TodoAppCard';
+import { useState, useEffect } from 'react';
+import type { Todo, Category } from './TodoAppCard';
 
 interface TodoEditProps {
   onAddTodo: (todo: Todo) => void;
   currentCategoryId: number;
+  categories: Category[];
 }
 
-export default function TodoEdit({ onAddTodo, currentCategoryId }: TodoEditProps) {
+export default function TodoEdit({ onAddTodo, currentCategoryId, categories }: TodoEditProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(
+    currentCategoryId === 1 ? 2 : currentCategoryId
+  );
+
+  // Update selected category when currentCategoryId changes (unless "All" is selected)
+  useEffect(() => {
+    if (currentCategoryId !== 1) {
+      setSelectedCategoryId(currentCategoryId);
+    }
+  }, [currentCategoryId]);
 
   const handleAdd = () => {
     if (!title.trim()) {
@@ -19,7 +30,7 @@ export default function TodoEdit({ onAddTodo, currentCategoryId }: TodoEditProps
 
     const newTodo: Todo = {
       id: Date.now(),
-      categoryId: currentCategoryId === 1 ? 2 : currentCategoryId, // Default to Work (2) if All (1) is selected
+      categoryId: selectedCategoryId,
       title: title.trim(),
       description: description.trim(),
       dueDate: dueDate,
@@ -55,6 +66,20 @@ export default function TodoEdit({ onAddTodo, currentCategoryId }: TodoEditProps
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         ></textarea>
+      </div>
+      <div className="form-group">
+        <label>Category</label>
+        <select
+          id="todoCategory"
+          value={selectedCategoryId}
+          onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
+        >
+          {categories.filter(c => c.id !== 1).map(category => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="form-group">
         <label>Due Date</label>

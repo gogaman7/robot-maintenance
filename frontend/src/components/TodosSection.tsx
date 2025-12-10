@@ -138,6 +138,7 @@ export default function TodosSection({
       <TodoEdit 
         onAddTodo={handleAddTodo}
         currentCategoryId={currentCategoryId}
+        categories={categories}
       />
       <TodosList 
         todos={sortedTodos}
